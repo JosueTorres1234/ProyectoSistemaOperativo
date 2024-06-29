@@ -1,0 +1,46 @@
+---
+console.log("javascript")
+//import HeaderButton from './HeaderButton.astro'; //
+import Search from './Search.astro';
+import Home from './Search.astro';
+---
+
+<header class="fixed top-1 left-0 w-full bg-red-900 z-40 flex flex-col items-center md:flex-row md:justify-between h-13">
+  <nav class="flex items-center justify-start w-full px-4">
+    <Search />
+  </nav>
+  
+    <!-- Botón de Start -->
+    {/* <HeaderButton class="text-white text-lg px-6 py-5" href="start">  */}
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-microsoft" viewBox="0 0 16 16">
+        <path d="M7.462 0H0v7.19h7.462zM16 0H8.538v7.19H16zM7.462 8.211H0V16h7.462zm8.538 0H8.538V16H16z"/>
+      </svg>
+ </HeaderButton>
+
+ ---
+import Search from './Search.astro';
+---
+
+<header class="barra-de-tareas">
+  <!-- Otras partes de tu barra de tareas -->
+  <Search />
+</header>
+    <!-- Botones a la derecha de Start -->
+ 
+    <!-- Botón de Settings -->
+  
+    <!-- Botón de Calendar -->
+  
+    <!-- Botón de Browser -->
+
+    ---
+import Confi from './Confi.astro';
+---
+
+<header class="barra-de-tareas">
+  <!-- Otras partes de tu barra de tareas -->
+   {/* <Confi /> */}
+</header>
+
+  </nav>
+</header>

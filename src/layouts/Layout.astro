@@ -1,51 +1,341 @@
----
-interface Props {
-	title: string;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Castaways</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: transparent;
+      background-image: url('/images/nieve.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-const { title } = Astro.props;
----
+    .desktop {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 15, 15, 0.5); /* Ajusta la opacidad para que sea menos oscura */
+      display: flex;
+      flex-direction: column;
+    }
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Astro description" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+    .app-container {
+      position: absolute;
+      top: 47%;
+      left: 1%; /* Mover los iconos más a la izquierda */
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 40px; /* Reducir el espaciado */
+    }
+
+    .app-icon {
+      width: 40px; /* Tamaño original de los íconos */
+      height: 40px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .app-icon:hover, .app-icon.active {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 10px;
+      right: 10px; /* Ajustar a la derecha */
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* Alinear al final del contenedor */
+      gap: 15px;
+    }
+
+    .top-bar img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .top-bar .clock {
+      font-size: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      text-align: right;
+    }
+
+    .battery {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      text-align: center;
+    }
+
+    .battery img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .taskbar {
+      position: absolute;
+      bottom: 50px; /* Ajustar la posición desde abajo */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      height: 50px; /* Altura de la barra de tareas */
+      width: 50%; /* Ancho de la barra de tareas */
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between; /* Espaciado uniforme */
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(204, 193, 193, 0.87);
+      padding: 0 80px;
+    }
+
+    .taskbar img {
+      width: 30px; /* Tamaño de los íconos de la barra de tareas */
+      height: 30px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .taskbar img:hover, .taskbar img.active {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 15px;
+      padding: 5px;
+      margin-right: 10px; /* Espacio a la derecha para separar del siguiente ícono */
+    }
+
+    .search-container input {
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 5px;
+      color: black; /* Cambiar el color del texto a negro */
+    }
+
+    .search-container button {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-container button img {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* Estilos para el modal de configuración */
+    .config-modal {
+      position: absolute;
+      top: calc(100% + 10px); /* Posición relativa a la barra de tareas */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8); /* Fondo semi-transparente */
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: none; /* Ocultar inicialmente */
+      z-index: 1000; /* Asegurar que esté por encima del resto del contenido */
+    }
+
+    .config-modal h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .config-modal ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .config-modal ul li {
+      cursor: pointer;
+      padding: 10px 0;
+    }
+
+    .config-modal ul li:hover {
+      text-decoration: underline;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="desktop">
+  <!-- Barra superior -->
+  <div class="top-bar">
+    <div class="wifi">
+      <img src="/images/wifi.png" alt="Wi-Fi" />
+      <span>Wi-Fi</span>
+    </div>
+    <div class="battery">
+      <img src="/images/bateria.png" alt="Battery" />
+      <span>100%</span>
+    </div>
+    <div class="clock">
+      <span id="current-time"></span>
+      <span id="current-date"></span>
+    </div>
+  </div>
+
+  <!-- Iconos de aplicaciones -->
+  <div class="app-container">
+    <div class="app-item">
+      <a href="https://www.google.com/chrome/" target="_blank">
+        <img src="/images/chrome.svg" alt="Chrome" class="app-icon" />
+      </a>
+      <span>Chrome</span>
+    </div>
+
+    <div class="app-item">
+      <a href="https://www.spotify.com/" target="_blank">
+        <img src="/images/spotify.svg" alt="Spotify" class="app-icon" />
+      </a>
+      <span>Spotify</span>
+    </div>
+    <div class="app-item">
+      <a href="https://www.netflix.com/" target="_blank">
+        <img src="/images/netflix.svg" alt="Netflix" class="app-icon" />
+      </a>
+      <span>Netflix</span>
+    </div>
+    <div class="app-item">
+      <a href="https://www.youtube.com/" target="_blank">
+        <img src="/images/youtube.svg" alt="YouTube" class="app-icon" />
+      </a>
+      <span>YouTube</span>
+    </div>
+  </div>
+
+  <!-- Barra de tareas -->
+  <div class="taskbar">
+    <img src="/images/home.png" alt="Inicio" class="task-icon" />
+
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Buscar en la web...">
+      <button id="search-button">
+       
+      </button>
+    </div>
+
+    <img src="/images/perfil.png" alt="Perfil" class="task-icon" />
+    <img src="/images/confi.png" alt="Configuración" id="config-icon" class="task-icon" />
+  </div>
+
+  <!-- Modal de configuración -->
+  <div class="config-modal" id="config-modal">
+    <span class="close-button" id="close-button">&times;</span>
+    <h2>Configuración</h2>
+    <ul>
+      <li>Wi-Fi</li>
+      <li>Bluetooth</li>
+      <li>Fecha y Hora</li>
+      <li>Idioma y Entrada</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Script para funcionalidad de la barra de tareas y modal de configuración -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const appIcons = document.querySelectorAll('.app-icon');
+    const taskIcons = document.querySelectorAll('.task-icon');
+    const searchButton = document.getElementById('search-button');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const configIcon = document.getElementById('config-icon');
+    const configModal = document.getElementById('config-modal');
+    const closeButton = document.getElementById('close-button');
+
+    appIcons.forEach(icon => {
+      icon.addEventListener('click', () => {
+        appIcons.forEach(i => i.classList.remove('active'));
+        icon.classList.add('active');
+      });
+    });
+
+    taskIcons.forEach(icon => {
+      icon.addEventListener('click', () => {
+        taskIcons.forEach(i => i.classList.remove('active'));
+        icon.classList.add('active');
+      });
+    });
+
+	
+    // Función para actualizar la hora, fecha y año cada segundo
+    function updateTime() {
+      const now = new Date();
+      const formattedTime = now.toLocaleTimeString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true });
+      const formattedDate = now.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric', year: 'numeric' });
+      document.getElementById('current-time').textContent = formattedTime;
+      document.getElementById('current-date').textContent = formattedDate;
+    }
+
+    // Llamar a updateTime inicialmente y luego cada segundo
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Funcionalidad de búsqueda
+    function performSearch() {
+      const query = searchInput.value.trim();
+      if (query !== '') {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+      }
+    }
+
+    searchButton.addEventListener('click', performSearch);
+
+    searchInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        performSearch();
+      }
+    });
+
+    // Mostrar/ocultar modal de configuración al hacer clic en el icono de configuración
+    configIcon.addEventListener('click', () => {
+      const rect = configIcon.getBoundingClientRect();
+      const modalWidth = configModal.offsetWidth;
+      const modalHeight = configModal.offsetHeight;
+
+      // Posiciona el modal encima del icono de configuración
+      configModal.style.top = `${rect.top - modalHeight - 258}px`; // 10px de separación
+      configModal.style.left = `${rect.left - modalWidth / 2}px`;
+      configModal.style.display = 'block';
+    });
+
+    // Cerrar modal al hacer clic en el botón de cerrar (X)
+    closeButton.addEventListener('click', () => {
+      configModal.style.display = 'none';
+    });
+  });
+</script>
+
+</body>
 </html>
-<style is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-		background-size: 224px;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
-</style>
